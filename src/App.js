@@ -55,10 +55,18 @@ class App extends Component {
   }
 
   getStyle(feature, layer) {
+    const colors = {
+      'central urban loop':           '#C6007E',
+      'eastern coastal loop':         '#008C95',
+      'north eastern riverine loop':  '#7D55C7',
+      'northern explorer loop':       '#FCD116',
+      'southern ridges loop':         '#215732',
+      'western adventure loop':       '#F99B0C' 
+    }
     return {
-      color: '#FF0000',
+      color: colors[feature['properties']['pcn_loop']],
       weight: 5,
-      opacity: 0.65
+      opacity: 0.88
     }
   }
 
@@ -80,7 +88,7 @@ class App extends Component {
             attribution={ attribution }
             url={ basemap }
           />
-          <GeoJSON data={pcn_geojson} style={this.getStyle} />
+          <GeoJSON data={ pcn_geojson } style={ this.getStyle } />
         </Map>
         <div>
           <div>
