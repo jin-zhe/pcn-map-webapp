@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 // import logo from './logo.svg';
 import style from './style';
-import { Map, TileLayer, GeoJSON, Marker, Popup } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON, CircleMarker, Circle, Popup } from 'react-leaflet';
 import pcn_geojson from './pcn_geojson.json';
 
 const basemap = 'https://maps-{s}.onemap.sg/v3/Grey/{z}/{x}/{y}.png';
@@ -17,7 +17,6 @@ class App extends Component {
     super(props);
     this.state = { 
       currentZoomLevel: zoomLevel,
-      currentMapCenter:  mapCenter,
       currentPositionMarker: {
         show: false,
         position: mapCenter,
@@ -28,20 +27,22 @@ class App extends Component {
 
   componentDidMount() {
     const leafletMap = this.leafletMap.leafletElement;
-    leafletMap.locate();
+    leafletMap.locate({
+      enableHighAccuracy: true,
+      watch: true
+    });
     leafletMap.on('locationfound', (e) => {
-      this.handleCurrentPositionMarker(true, e.latlng, e.accuracy)
-      this.handleMapCenter(e.latlng); // center to current pos
-      this.handleZoomLevel(18);       // zoom in
+      this.handleCurrentPositionMarker(true, e.latlng, e.accuracy);
+      leafletMap.setView(e.latlng, 18); // pan and zoom to current pos
     });
     leafletMap.on('locationerror', (e) => {
       alert(e.message);
-      this.handleCurrentPositionMarker(false, 0, 0)
+      this.handleCurrentPositionMarker(false, 0, 0);
+      // DUMMY DATA TODO
+      // const location = [1.337673, 103.696923];
+      // this.handleCurrentPositionMarker(true, location, 50);
+      // leafletMap.setView(location, 18); // pan and zoom to current pos
     });
-  }
-
-  handleMapCenter(currentMapCenter) {
-    this.setState({ currentMapCenter: currentMapCenter })
   }
 
   handleZoomLevel(currentZoomLevel) {
@@ -77,11 +78,30 @@ class App extends Component {
     function CurrentPositionMarker(props) {
       if (props.show) {
         return (
-          <Marker key="currentPos" position={ props.position }>
+          <CircleMarker
+            key="currentPos"
+            center={ props.position }
+            radius={ 8 }
+            fill={ true }
+            color={ "#FFFFFF" }
+            weight={ 3 }
+            fillColor={ "#4285F4" }
+            fillOpacity={ 1 }
+          >
             <Popup>
               <span>{`You are within ${props.accuracy / 2} meters from this point`}</span>
             </Popup>
-          </Marker>
+            <Circle
+              center={ props.position }
+              radius={ props.accuracy/2 }
+              fill={ true }
+              color={ "#88B5DC" }
+              weight={ 1 }
+              fillColor={ "#88B5DC" }
+              fillOpacity={ 0.3 }
+            >
+            </Circle>
+          </CircleMarker>
         )
       }
       return null;
@@ -91,7 +111,7 @@ class App extends Component {
       <div style={ style.fullHeight }>
         <Map
           ref={m => { this.leafletMap = m; }}
-          center={ this.state.currentMapCenter}
+          center={ mapCenter }
           zoom={ this.state.currentZoomLevel }
           maxBounds={ maxBounds }
           minZoom={ minZoom }
